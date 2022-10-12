@@ -24,11 +24,12 @@ def main():
 
 def encontra_soma(dominos):
     somas = []
+    # Pega a diferença entre o valor de cima e de baixo de cada dominó para poder comparar
     for j in range(len(dominos)):
         somas.append([dominos[j][0] - dominos[j][1],j])
     possibleCombinations = []
 
-    # Conseguindo todas as combinações de tamanho n ou n-1
+    # Conseguindo todas as combinações de tamanho n ou n-1, que são as combinações onde até 1 dominó foi retirado
     for L in range(len(somas)-1,len(somas) +1,):
         for subset in itertools.combinations(somas, L):
         #Combinações válidas
@@ -40,24 +41,29 @@ def encontra_soma(dominos):
 
     #Itera por todas as combinações possíveis
     for i in range(len(possibleCombinations)):
-        #Itera por todos os elementos da combinação i para pegar os valores de tamanho diferente
+        #Itera por todos os elementos da combinação iterada para pegar subsets de tamanhos diferentes
         for j in range(len(possibleCombinations[i])):
-            # Separa novamente as combinações em subsets para verificar se a soma deles é igual a do complemento
+            # Separa novamente as combinações em subsets de tamanhos diferentes
             for subset in itertools.combinations(possibleCombinations[i], j+1):
+                    #Pega o complemento do subset para verificar se a soma dos valores do complemento é igual a soma dos valores do subset
                     complemento = [x for x in possibleCombinations[i] if x not in subset]
                     soma = sum(abs(num[0]) for num in subset)
                     somaComplemento = sum(abs(num[0]) for num in complemento)
 
+                    #Se a soma for igual, significa que há uma combinação onde a soma dos valores dos dominós é 0
                     if(soma == somaComplemento):
                         achouSolucao = True
                         solucao = []
                         solucaoIndices = []
+                        # É arbitrado que os valores dos dominós no subset são positivos, então caso o valor da soma seja negativo, inverte-se o valor dos dominós para a parte de cima ser maior que a de baixo
                         for item in subset:
                             solucaoIndices.append(item[1])
                             if(item[0]>=0):
                                 solucao.append(dominos[item[1]])
                             else:
                                 solucao.append(dominos[item[1]][::-1])
+                        # É arbitrado que os valores dos dominós no complemento do subset são negativos, então caso o valor da soma seja positivo, inverte-se o valor dos dominós para a parte de cima ser menor que a de baixo
+                        # Com isso, os valores dos dominós no subset e no complemento são opostos e a soma dos valores dos dominós é 0
                         for item in complemento:
                             solucaoIndices.append(item[1])
                             if(item[0]>=0):
@@ -72,7 +78,7 @@ def encontra_soma(dominos):
                             somasIndices = [x[1] for x in somas]
                             dominoDescartado = [x for x in somasIndices if x not in solucaoIndices]                   
                         break
-            # Quebra o loop externo se achar uma solução para evitar repetição na mesma combinação
+            # Quebra o loop externo se achar uma solução. É utilizado para evitar repetição na mesma combinação quando o subset iterado for o complemento de um subset já encontrado
             else:
                 continue
             break
