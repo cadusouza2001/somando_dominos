@@ -6,6 +6,7 @@
 #Após pegar os resultados que deram certo, verificar qual dá a maior soma
 
 import itertools
+from re import sub
 
 
 def main():
@@ -23,31 +24,30 @@ def main():
 
     somas = []
     for j in range(n):
-        somas.append(dominos[j][0] - dominos[j][1])
+        somas.append([dominos[j][0] - dominos[j][1],j])
     print("Somas",somas)
 
-    
     possibleCombinations = []
-    print("")
+
     # Conseguindo todas as combinações de tamanho n ou n-1
     for L in range(len(somas)-1,len(somas) +1,):
         for subset in itertools.combinations(somas, L):
-            #Combinações válidas
-            possibleCombinations.append(subset)
-        # TODO fazer uma versão própria disso para poder pegar o índice do elemento removido
-        # TODO verificar qual dá a maior soma
-        # TODO pegar o index e fazer a logica de inversão dos dominos
-                
+        #Combinações válidas
+            possibleCombinations.append(subset) 
+       
+    
     for i in range(len(possibleCombinations)):
         for j in range(len(possibleCombinations[i])):
             for subset in itertools.combinations(possibleCombinations[i], j+1):
-                    somaSubset = sum(abs(num) for num in subset)
-                    complemento = set.difference(set(possibleCombinations[i]),set(subset))
-                    somaComplemento = sum(abs(num) for num in complemento)
-                    if(somaSubset == somaComplemento):
+                    complemento = [x for x in possibleCombinations[i] if x not in subset]
+                    soma = sum(abs(num[0]) for num in subset)
+                    somaComplemento = sum(abs(num[0]) for num in complemento)
+                    if(soma == somaComplemento):
+                         # TODO pegar o index e fazer a logica de inversão dos dominos
+                         # TODO verificar qual dá a maior soma
                         print("Combinação:\n",possibleCombinations[i])
-                        print("Soma do subset:",somaSubset,"é igual a soma do complemento:",somaComplemento)
-                        print("Dominos:",subset,"e",complemento)
+                        print("Soma do subset é igual a soma do complemento, soma:",soma)
+                        print("Subset:",subset,"Complemento:",complemento)
                         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
                         break
             # Quebra o loop externo se achar uma solução para evitar repetição
