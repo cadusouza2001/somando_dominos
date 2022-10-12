@@ -6,20 +6,25 @@
 #Após pegar os resultados que deram certo, verificar qual dá a maior soma
 
 import itertools
+import os
 
 def main():
-    #Entrada por arquivo
-    #TODO resolver caminho do arquivo
-    #TODO ler mais do que uma entrada por vez
-    arquivo = open("3 Semestre\Análise e Projeto de Algoritmos\Trab GB\entrada.txt", "r")
+    #Entrada por arquivo chamado "entrada.txt"
+    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    arquivo = open(os.path.join(__location__,"entrada.txt"), "r")
+
     n = int(arquivo.readline())
-    dominos = []
-    for j in range(n):
-        dominos.append([int(x) for x in arquivo.readline().split()])
+    while(n!=0):
+        dominos = []
+        for j in range(n):
+            dominos.append([int(x) for x in arquivo.readline().split()])
+        encontra_soma(dominos)
+        n = int(arquivo.readline())
     arquivo.close()
-    
+
+def encontra_soma(dominos):
     somas = []
-    for j in range(n):
+    for j in range(len(dominos)):
         somas.append([dominos[j][0] - dominos[j][1],j])
     possibleCombinations = []
 
@@ -82,8 +87,7 @@ def main():
         else:
             print("nenhum dominó descartado")
     else:
-        print("impossível")
-    
+        print("impossível")    
         
 
 
