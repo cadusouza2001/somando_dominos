@@ -7,6 +7,7 @@
 
 import itertools
 import os
+from time import time
 
 def main():
     #Entrada por arquivo chamado "entrada.txt"
@@ -23,6 +24,7 @@ def main():
     arquivo.close()
 
 def encontra_soma(dominos):
+    tempo = time()
     somas = []
     # Pega a diferença entre o valor de cima e de baixo de cada dominó para poder comparar
     for j in range(len(dominos)):
@@ -33,25 +35,29 @@ def encontra_soma(dominos):
     for L in range(len(somas)-1,len(somas) +1,):
         for subset in itertools.combinations(somas, L):
         #Combinações válidas
-            possibleCombinations.append(subset) 
+            #TODO checar se a soma é par, se não for não tem como dividir em duas partes iguais
+            if(sum([abs(x[0]) for x in subset]) % 2 == 0):
+                possibleCombinations.append(subset)
 
     maiorSoma = 0
     dominoDescartado = []
     achouSolucao = False
 
     #Itera por todas as combinações possíveis
-    for i in range(len(possibleCombinations)):
-        #Itera por todos os elementos da combinação iterada para pegar subsets de tamanhos diferentes
-        for j in range(len(possibleCombinations[i])):
+    for combination in possibleCombinations:
+        #Itera por todos os tamanhos de combinações possíveis
+        
+        somaCombinacao = sum([abs(x[0]) for x in combination])
+        
+        for j in range(len(combination)):
             # Separa novamente as combinações em subsets de tamanhos diferentes
-            for subset in itertools.combinations(possibleCombinations[i], j+1):
-                    #Pega o complemento do subset para verificar se a soma dos valores do complemento é igual a soma dos valores do subset
-                    complemento = [x for x in possibleCombinations[i] if x not in subset]
+            for subset in itertools.combinations(combination, j+1):
                     soma = sum(abs(num[0]) for num in subset)
-                    somaComplemento = sum(abs(num[0]) for num in complemento)
-
-                    #Se a soma for igual, significa que há uma combinação onde a soma dos valores dos dominós é 0
-                    if(soma == somaComplemento):
+                    #Pega o complemento do subset para verificar se a soma dos valores do complemento é igual a soma dos valores do subset               
+                    if(soma!=somaCombinacao//2):
+                        continue
+                    else:
+                        complemento = [x for x in combination if x not in subset]
                         achouSolucao = True
                         solucao = []
                         solucaoIndices = []
@@ -94,7 +100,7 @@ def encontra_soma(dominos):
             print("nenhum dominó descartado")
     else:
         print("impossível")    
+    # print("Tempo de execução para este conjunto: ",time()-tempo)
         
-
 
 main()
