@@ -9,22 +9,10 @@ import itertools
 import os
 from time import time
 
-def main():
-    #Entrada por arquivo chamado "entrada.txt"
-    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    arquivo = open(os.path.join(__location__,"entrada.txt"), "r")
 
-    n = int(arquivo.readline())
-    while(n!=0):
-        dominos = []
-        for j in range(n):
-            dominos.append([int(x) for x in arquivo.readline().split()])
-        encontra_soma(dominos)
-        n = int(arquivo.readline())
-    arquivo.close()
 
 def encontra_soma(dominos):
-    tempo = time()
+    # tempo = time()
     somas = []
     # Pega a diferença entre o valor de cima e de baixo de cada dominó para poder comparar
     for j in range(len(dominos)):
@@ -36,8 +24,12 @@ def encontra_soma(dominos):
         for subset in itertools.combinations(somas, L):
         #Combinações válidas
             #TODO checar se a soma é par, se não for não tem como dividir em duas partes iguais
-            if(sum([abs(x[0]) for x in subset]) % 2 == 0):
+            absolute_values = [abs(x[0]) for x in subset]
+            if(sum(absolute_values) % 2 == 0 and pseudo_polynomial_partition_problem(absolute_values)):
                 possibleCombinations.append(subset)
+    #             print("Set possivel: ",subset)
+    #             print("Tamanho do set: ",len(subset))
+    # print("Combinações possíveis: ",len(possibleCombinations))
 
     maiorSoma = 0
     dominoDescartado = []
@@ -47,16 +39,19 @@ def encontra_soma(dominos):
     for combination in possibleCombinations:
         #Itera por todos os tamanhos de combinações possíveis
         
-        somaCombinacao = sum([abs(x[0]) for x in combination])
+        somaCombinacao = sum([abs(x[0]) for x in combination])//2
         
         for j in range(len(combination)):
             # Separa novamente as combinações em subsets de tamanhos diferentes
             for subset in itertools.combinations(combination, j+1):
-                    soma = sum(abs(num[0]) for num in subset)
+                # TODO iterar só metade dos subsets em função própria pois o outro é o complementar
+                    soma = 0
+                    for num in subset:
+                        soma += abs(num[0])
+                        if(soma > somaCombinacao):
+                            continue
                     #Pega o complemento do subset para verificar se a soma dos valores do complemento é igual a soma dos valores do subset               
-                    if(soma!=somaCombinacao//2):
-                        continue
-                    else:
+                    if(soma==somaCombinacao):
                         complemento = [x for x in combination if x not in subset]
                         achouSolucao = True
                         solucao = []
@@ -88,19 +83,53 @@ def encontra_soma(dominos):
             else:
                 continue
             break
-
+    
+    resultado = ""
     if(achouSolucao):
-        print(maiorSoma,end=" ")
+        resultado = str(maiorSoma) + " "
         if dominoDescartado:
             dominoEscolhido = dominos[dominoDescartado[0]]
             if dominoEscolhido[0]>dominoEscolhido[1]:
                 dominoEscolhido = dominoEscolhido[::-1]
-            print("descartado o dominó",dominoEscolhido[0],dominoEscolhido[1])
+            resultado= resultado + "descartado o dominó " + str(dominoEscolhido[0]) + " " + str(dominoEscolhido[1])
         else:
-            print("nenhum dominó descartado")
+            resultado = resultado + "nenhum dominó descartado"
     else:
-        print("impossível")    
+        resultado = "impossível"
     # print("Tempo de execução para este conjunto: ",time()-tempo)
-        
+    return(resultado)
 
-main()
+def pseudo_polynomial_partition_problem(set):
+    soma = sum(set)//2
+    matrix=[[True]]
+    for number in set:
+        matrix.append([True])
+    for i in range(0,soma):
+        matrix[0].append(False)
+
+    for i in range(1,len(set)+1):
+        for j in range(1,soma+1):
+            if j<set[i-1]:
+                matrix[i].append(matrix[i-1][j])
+            else:
+                matrix[i].append(matrix[i-1][j-set[i-1]] or matrix[i-1][j])
+    # for linha in matrix:
+    #     print(linha)
+    return matrix[len(set)][soma]        
+
+def main():
+    #Entrada por arquivo chamado "entrada.txt"
+    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    arquivo = open(os.path.join(__location__,"entrada.txt"), "r")
+
+    n = int(arquivo.readline())
+    while(n!=0):
+        dominos = []
+        for j in range(n):
+            dominos.append([int(x) for x in arquivo.readline().split()])
+        print(encontra_soma(dominos))
+        n = int(arquivo.readline())
+    arquivo.close()
+
+if __name__ == "__main__":
+    main()
