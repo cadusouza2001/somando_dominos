@@ -17,87 +17,18 @@ def encontra_soma(dominos):
     # Pega a diferença entre o valor de cima e de baixo de cada dominó para poder comparar
     for j in range(len(dominos)):
         somas.append([dominos[j][0] - dominos[j][1],j])
-    possibleCombinations = []
 
     # Conseguindo todas as combinações de tamanho n ou n-1, que são as combinações onde até 1 dominó foi retirado
     for L in range(len(somas)-1,len(somas) +1,):
         for subset in itertools.combinations(somas, L):
         #Combinações válidas
-            #TODO checar se a soma é par, se não for não tem como dividir em duas partes iguais
             absolute_values = [abs(x[0]) for x in subset]
-            if(sum(absolute_values) % 2 == 0 and pseudo_polynomial_partition_problem(absolute_values)):
-                possibleCombinations.append(subset)
-    #             print("Set possivel: ",subset)
-    #             print("Tamanho do set: ",len(subset))
-    # print("Combinações possíveis: ",len(possibleCombinations))
+            if(sum(absolute_values) % 2 == 0):
+                (combinacoes)=pseudo_polynomial_partition_problem(absolute_values)
+                if(combinacoes):
+                    print("Solução: ",(combinacoes))
+                    print("Subconjunto: ",subset)
 
-    maiorSoma = 0
-    dominoDescartado = []
-    achouSolucao = False
-
-    #Itera por todas as combinações possíveis
-    for combination in possibleCombinations:
-        #Itera por todos os tamanhos de combinações possíveis
-        
-        somaCombinacao = sum([abs(x[0]) for x in combination])//2
-        
-        for j in range(len(combination)):
-            # Separa novamente as combinações em subsets de tamanhos diferentes
-            for subset in itertools.combinations(combination, j+1):
-                # TODO iterar só metade dos subsets em função própria pois o outro é o complementar
-                    soma = 0
-                    for num in subset:
-                        soma += abs(num[0])
-                        if(soma > somaCombinacao):
-                            continue
-                    #Pega o complemento do subset para verificar se a soma dos valores do complemento é igual a soma dos valores do subset               
-                    if(soma==somaCombinacao):
-                        complemento = [x for x in combination if x not in subset]
-                        achouSolucao = True
-                        solucao = []
-                        solucaoIndices = []
-                        # É arbitrado que os valores dos dominós no subset são positivos, então caso o valor da soma seja negativo, inverte-se o valor dos dominós para a parte de cima ser maior que a de baixo
-                        for item in subset:
-                            solucaoIndices.append(item[1])
-                            if(item[0]>=0):
-                                solucao.append(dominos[item[1]])
-                            else:
-                                solucao.append(dominos[item[1]][::-1])
-                        # É arbitrado que os valores dos dominós no complemento do subset são negativos, então caso o valor da soma seja positivo, inverte-se o valor dos dominós para a parte de cima ser menor que a de baixo
-                        # Com isso, os valores dos dominós no subset e no complemento são opostos e a soma dos valores dos dominós é 0
-                        for item in complemento:
-                            solucaoIndices.append(item[1])
-                            if(item[0]>=0):
-                                solucao.append(dominos[item[1]][::-1])
-                            else:
-                                solucao.append(dominos[item[1]])
-
-                        solucaoSoma = sum(x[0] for x in solucao)
-                        
-                        if(solucaoSoma > maiorSoma):
-                            maiorSoma = solucaoSoma
-                            somasIndices = [x[1] for x in somas]
-                            dominoDescartado = [x for x in somasIndices if x not in solucaoIndices]                   
-                        break
-            # Quebra o loop externo se achar uma solução. É utilizado para evitar repetição na mesma combinação quando o subset iterado for o complemento de um subset já encontrado
-            else:
-                continue
-            break
-    
-    resultado = ""
-    if(achouSolucao):
-        resultado = str(maiorSoma) + " "
-        if dominoDescartado:
-            dominoEscolhido = dominos[dominoDescartado[0]]
-            if dominoEscolhido[0]>dominoEscolhido[1]:
-                dominoEscolhido = dominoEscolhido[::-1]
-            resultado= resultado + "descartado o dominó " + str(dominoEscolhido[0]) + " " + str(dominoEscolhido[1])
-        else:
-            resultado = resultado + "nenhum dominó descartado"
-    else:
-        resultado = "impossível"
-    # print("Tempo de execução para este conjunto: ",time()-tempo)
-    return(resultado)
 
 def pseudo_polynomial_partition_problem(set):
     soma = sum(set)//2
@@ -108,14 +39,36 @@ def pseudo_polynomial_partition_problem(set):
         matrix[0].append(False)
 
     for i in range(1,len(set)+1):
-        for j in range(1,soma+1):
-            if j<set[i-1]:
-                matrix[i].append(matrix[i-1][j])
+        for somaAtual in range(1,soma+1):
+            if somaAtual<set[i-1]:
+                matrix[i].append(matrix[i-1][somaAtual])
             else:
-                matrix[i].append(matrix[i-1][j-set[i-1]] or matrix[i-1][j])
-    # for linha in matrix:
-    #     print(linha)
-    return matrix[len(set)][soma]        
+                matrix[i].append(matrix[i-1][somaAtual-set[i-1]] or matrix[i-1][somaAtual])
+
+    set1, set2 = [], []
+    if(matrix[len(set)][soma]):
+        i, somaAtual = len(set), soma
+        while i > 0 and somaAtual >= 0:
+            if matrix[i-1][somaAtual]:
+                i-=1
+                set1.append(set[i])
+            elif matrix[i-1][somaAtual-set[i-1]]:
+                i -= 1
+                somaAtual -= set[i]
+                set2.append(set[i])
+        return set1,set2
+    else:
+        return False
+    # i, somaAtual = len(set), soma
+    # while i > 0 and somaAtual >= 0:
+    #     if matrix[i-1][somaAtual]:
+    #         i-=1
+    #         set1.append(set[i])
+    #     elif matrix[i-1][somaAtual-set[i-1]]:
+    #         i -= 1
+    #         somaAtual -= set[i]
+    #         set2.append(set[i])
+    # return matrix[len(set)][soma], set1, set2        
 
 def main():
     #Entrada por arquivo chamado "entrada.txt"
